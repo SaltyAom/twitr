@@ -1,0 +1,1 @@
+docker build -t database-bridge ../database-bridge

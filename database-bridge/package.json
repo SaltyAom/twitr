@@ -1,0 +1,34 @@
+{
+  "name": "database-bridge",
+  "version": "1.0.0",
+  "main": "index.js",
+  "license": "MIT",
+  "scripts": {
+    "dev": "nodemon",
+    "build": "tsc",
+    "start": "node dist/index.js"
+  },
+  "devDependencies": {
+    "@types/node": "^15.6.0",
+    "nodemon": "^2.0.7",
+    "prisma": "2.23.0",
+    "ts-node": "^10.0.0",
+    "tsconfig-paths": "^3.9.0",
+    "typescript": "^4.2.4"
+  },
+  "dependencies": {
+    "@prisma/client": "2.23.0",
+    "argon2": "^0.27.2",
+    "dotenv": "^10.0.0",
+    "fastify": "^3.15.1",
+    "module-alias": "^2.2.2"
+  },
+  "engines": {
+    "node": "14"
+  },
+  "_moduleAliases": {
+    "@modules": "./dist/modules",
+    "@services": "./dist/services",
+    "@database": "./dist/services/database"
+  }
+}
