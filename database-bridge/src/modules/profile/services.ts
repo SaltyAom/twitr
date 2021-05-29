@@ -2,12 +2,14 @@ import Prisma from '@database'
 
 import {
     ProfileBody,
+    GetUserPostParam,
     FollowBody,
     FollowingParam,
     FollowedByParam
 } from './types'
 
-const perPage = 25
+const getPagination = (page: string | number, perPage: number) =>
+    +page * perPage
 
 export const getProfile = async ({ id: idString }: ProfileBody) => {
     let id = +idString
@@ -58,6 +60,27 @@ export const getProfile = async ({ id: idString }: ProfileBody) => {
     }
 }
 
+const postPerPage = 15
+
+export const getUserPosts = async ({ id, pagination }: GetUserPostParam) =>
+    await Prisma.user.findUnique({
+        where: {
+            id: +id
+        },
+        select: {
+            post: {
+                select: {
+                    id: true,
+                    content: true,
+                    images: true,
+                    createdAt: true
+                },
+                skip: getPagination(+pagination - 1, postPerPage),
+                take: getPagination(pagination, postPerPage)
+            }
+        }
+    })
+
 export const follow = async ({ from, to }: FollowBody) => {
     let current = await Prisma.user.findUnique({
         where: {
@@ -86,7 +109,7 @@ export const follow = async ({ from, to }: FollowBody) => {
     })
 }
 
-const getPage = (page: string | number) => +page * perPage
+const followerPerPage = 25
 
 export const getFollowing = async ({ id, pagination }: FollowingParam) =>
     await Prisma.user.findUnique({
@@ -104,8 +127,8 @@ export const getFollowing = async ({ id, pagination }: FollowingParam) =>
                         }
                     }
                 },
-                skip: getPage(+pagination - 1),
-                take: getPage(pagination)
+                skip: getPagination(+pagination - 1, followerPerPage),
+                take: getPagination(pagination, followerPerPage)
             }
         }
     })
@@ -126,8 +149,8 @@ export const getFollowedBy = async ({ id, pagination }: FollowedByParam) =>
                         }
                     }
                 },
-                skip: getPage(+pagination - 1),
-                take: getPage(pagination)
+                skip: getPagination(+pagination - 1, followerPerPage),
+                take: getPagination(pagination, followerPerPage)
             }
         }
     })

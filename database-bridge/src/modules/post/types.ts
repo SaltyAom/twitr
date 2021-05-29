@@ -4,12 +4,12 @@ export interface PostBody {
     images: string[]
 }
 
-export interface FavBody {
+export interface RetweetBody extends Omit<PostBody, 'id'> {
     userId: number
     postId: number
 }
 
-export interface ShareBody {
+export interface FavBody {
     userId: number
     postId: number
 }

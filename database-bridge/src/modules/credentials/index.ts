@@ -36,7 +36,7 @@ export default async (app: FastifyInstance) => {
                     .send(error('Username or password is incorrect'))
 
             return success({
-                username: credential.username
+                id: credential.id
             })
         }
     )

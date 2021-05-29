@@ -14,6 +14,7 @@ export const getCredential = async ({ username }: CredentialBody) =>
             username
         },
         select: {
+            id: true,
             username: true,
             password: true
         }

@@ -2,6 +2,11 @@ export interface ProfileBody {
     id: string
 }
 
+export interface GetUserPostParam {
+    id: string
+    pagination: string
+}
+
 export interface FollowBody {
     from: number
     to: number

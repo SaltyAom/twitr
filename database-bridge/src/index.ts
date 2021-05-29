@@ -1,4 +1,5 @@
-import 'module-alias/register'
+import './alias'
+
 import { config } from 'dotenv'
 
 config()
@@ -20,7 +21,7 @@ const server = () => {
             prefix: '/profile'
         })
         .register(post, {
-            prefix: 'post'
+            prefix: '/post'
         })
         .listen(8080, '0.0.0.0', (err, addr) => {
             if (err) return console.error(err)

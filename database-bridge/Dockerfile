@@ -71,4 +71,4 @@ RUN apk add --update "nodejs=14.16.1-r1"
 
 EXPOSE 8080
 
-CMD ["node", "dist/index.js"]
+CMD ["NODE_ENV=production", "node", "dist/index.js"]

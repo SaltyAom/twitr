@@ -17,7 +17,6 @@ model User {
   following     User[]  @relation("follow", references: [id])
   followedBy    User[]  @relation("follow", references: [id])
   favorite      Post[]  @relation("favorite", references: [id])
-  share         Post[]  @relation("share", references: [id])
 }
 
 model Profile {
@@ -31,12 +30,14 @@ model Profile {
 }
 
 model Post {
-  id          Int       @id @default(autoincrement())
-  content     String    @db.VarChar(255)
-  createdAt   DateTime  @default(now())
-  author      User      @relation("ownPost", fields: [authorId], references: [id])
-  authorId    Int
-  images      String[]
-  favoriteBy  User[]    @relation("favorite")
-  shareBy     User[]    @relation("share")
+  id                Int       @id @default(autoincrement())
+  content           String?   @db.VarChar(255)
+  createdAt         DateTime  @default(now())
+  author            User      @relation("ownPost", fields: [authorId], references: [id])
+  authorId          Int
+  images            String[]
+  favoriteBy        User[]    @relation("favorite")
+  retweetId         Int?
+  retweetFromPost   Post?     @relation("retweet", fields: [retweetId], references: [id])
+  retweetPost       Post?     @relation("retweet")
 }

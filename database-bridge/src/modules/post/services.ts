@@ -1,6 +1,6 @@
 import Prisma from '@database'
 
-import type { PostBody, FavBody, ShareBody, GetPostParam } from './types'
+import type { PostBody, FavBody, GetPostParam, RetweetBody } from './types'
 
 export const post = async ({ id, ...post }: PostBody) =>
     await Prisma.post.create({
@@ -42,33 +42,22 @@ export const favorite = async ({ userId, postId }: FavBody) => {
     })
 }
 
-export const share = async ({ userId, postId }: ShareBody) => {
-    let current = await Prisma.post.findUnique({
-        where: {
-            id: postId
-        },
-        select: {
-            shareBy: {
-                select: {
-                    id: true
+export const retweet = async ({ userId, postId, content }: RetweetBody) =>
+    await Prisma.post.create({
+        data: {
+            content,
+            author: {
+                connect: {
+                    id: userId
+                }
+            },
+            retweetFromPost: {
+                connect: {
+                    id: postId
                 }
             }
         }
     })
-
-    if (!current) return null
-
-    return await Prisma.post.update({
-        where: {
-            id: postId
-        },
-        data: {
-            shareBy: {
-                set: [{ id: userId }, ...current?.shareBy]
-            }
-        }
-    })
-}
 
 export const getPost = async ({ id: idString }: GetPostParam) => {
     let id = +idString
@@ -91,6 +80,25 @@ export const getPost = async ({ id: idString }: GetPostParam) => {
                             }
                         }
                     }
+                },
+                retweetId: true,
+                retweetFromPost: {
+                    select: {
+                        id: true,
+                        content: true,
+                        createdAt: true,
+                        images: true,
+                        author: {
+                            select: {
+                                profile: {
+                                    select: {
+                                        name: true,
+                                        image: true
+                                    }
+                                }
+                            }
+                        }
+                    }
                 }
             }
         }),
@@ -103,13 +111,9 @@ export const getPost = async ({ id: idString }: GetPostParam) => {
                 }
             }
         }),
-        Prisma.user.count({
+        Prisma.post.count({
             where: {
-                share: {
-                    some: {
-                        id
-                    }
-                }
+                authorId: id
             }
         })
     ])

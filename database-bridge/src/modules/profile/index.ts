@@ -1,7 +1,13 @@
 import { validate } from '@services/validation'
 import { invalidForm, success, error } from '@services/response'
 
-import { getProfile, follow, getFollowing, getFollowedBy } from './services'
+import {
+    getProfile,
+    follow,
+    getFollowing,
+    getFollowedBy,
+    getUserPosts
+} from './services'
 
 import type { FastifyInstance } from 'fastify'
 
@@ -9,12 +15,13 @@ import {
     ProfileBody,
     FollowBody,
     FollowingParam,
-    FollowedByParam
+    FollowedByParam,
+    GetUserPostParam
 } from './types'
 
 export default async (app: FastifyInstance) => {
     app.get<{ Params: ProfileBody }>(
-        '/:id/profile',
+        '/:id',
         async ({ params }, res) => {
             let profile = await getProfile(params)
 
@@ -41,9 +48,26 @@ export default async (app: FastifyInstance) => {
         return success(followed)
     })
 
+    app.get<{
+        Params: GetUserPostParam
+    }>(
+        '/:id/post/:pagination',
+        async ({ params, params: { pagination } }, res) => {
+            if (+pagination < 1) return res.status(400).send(invalidForm())
+
+            let post = await getUserPosts(params)
+
+            if (!post) return res.status(400).send(error('User not existed'))
+
+            return success(post)
+        }
+    )
+
     app.get<{ Params: FollowingParam }>(
         '/:id/following/:pagination',
-        async ({ params }, res) => {
+        async ({ params, params: { pagination } }, res) => {
+            if (+pagination < 1) return res.status(400).send(invalidForm())
+
             let following = await getFollowing(params)
 
             if (!following)
@@ -55,7 +79,9 @@ export default async (app: FastifyInstance) => {
 
     app.get<{ Params: FollowedByParam }>(
         '/:id/followedBy/:pagination',
-        async ({ params }, res) => {
+        async ({ params, params: { pagination } }, res) => {
+            if (+pagination < 1) return res.status(400).send(invalidForm())
+
             let followedBy = await getFollowedBy(params)
 
             if (!followedBy)

@@ -3,12 +3,14 @@ import type { FastifyInstance } from 'fastify'
 import { validate } from '@services/validation'
 import { invalidForm, error, success } from '@services/response'
 
-import { post, favorite, share, getPost } from './services'
+import { post, favorite, retweet, getPost } from './services'
 
-import { FavBody, PostBody, ShareBody, GetPostParam } from './types'
+import type { FavBody, PostBody, RetweetBody, GetPostParam } from './types'
 
 export default (app: FastifyInstance) => {
     app.put<{ Body: PostBody }>('/create', async ({ body }, res) => {
+        console.log(body)
+
         if (
             !validate(body, {
                 id: 'number',
@@ -23,6 +25,24 @@ export default (app: FastifyInstance) => {
         if (!posted) return res.status(502).send(error('Something went wrong'))
 
         return success(posted)
+    })
+
+    app.put<{ Body: RetweetBody }>('/retweet', async ({ body }, res) => {
+        if (
+            !validate(body, {
+                userId: 'number',
+                postId: 'number',
+                content: 'string',
+                images: 'array'
+            })
+        )
+            return res.status(400).send(invalidForm())
+
+        let shared = await retweet(body)
+
+        if (!shared) return res.status(502).send(error('Something went wrong'))
+
+        return success(shared)
     })
 
     app.patch<{ Body: FavBody }>('/favorite', async ({ body }, res) => {
@@ -40,22 +60,6 @@ export default (app: FastifyInstance) => {
             return res.status(502).send(error('Something went wrong'))
 
         return success(favorited)
-    })
-
-    app.patch<{ Body: ShareBody }>('/share', async ({ body }, res) => {
-        if (
-            !validate(body, {
-                userId: 'number',
-                postId: 'number'
-            })
-        )
-            return res.status(400).send(invalidForm())
-
-        let shared = await share(body)
-
-        if (!shared) return res.status(502).send(error('Something went wrong'))
-
-        return success(shared)
     })
 
     app.get<{
