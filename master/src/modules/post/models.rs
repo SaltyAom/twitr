@@ -53,3 +53,39 @@ pub struct FavoriteRequest {
     pub userId: u64,
     pub postId: u64
 }
+
+#[allow(non_snake_case)]
+#[derive(Serialize, Deserialize)]
+pub struct DetailedPostBridge {
+    pub id: u64,
+    pub content: String,
+    pub createdAt: String,
+    pub images: Vec<String>,
+    pub author: DetailedPostAuthor,
+    pub retweetFromPost: Option<RetweetPost>,
+    pub totalFavorite: u64,
+    pub totalShared: u64
+}
+
+#[allow(non_snake_case)]
+#[derive(Serialize, Deserialize)]
+pub struct DetailedPostAuthor {
+    pub profile: DetailedPostAuthorProfile
+}
+
+#[allow(non_snake_case)]
+#[derive(Serialize, Deserialize)]
+pub struct DetailedPostAuthorProfile {
+    pub name: String,
+    pub images: Option<String>
+}
+
+#[allow(non_snake_case)]
+#[derive(Serialize, Deserialize)]
+pub struct RetweetPost {
+    pub id: u64,
+    pub content: String,
+    pub createdAt: String,
+    pub images: Vec<String>,
+    pub author: DetailedPostAuthor
+}

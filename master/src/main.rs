@@ -9,7 +9,8 @@ use actix_web::{ HttpServer, App };
 use crate::modules::{ 
     status::controllers::status, 
     credentials::controllers::credentials,
-    post::controllers::post
+    post::controllers::post,
+    profile::controllers::profile
 };
 
 mod modules;
@@ -25,6 +26,7 @@ async fn main() -> io::Result<()> {
             .configure(status)
             .configure(credentials)
             .configure(post)
+            .configure(profile)
     })
     .bind("0.0.0.0:8081")?
     .run()

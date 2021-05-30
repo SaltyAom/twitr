@@ -29,7 +29,7 @@ export default async (app: FastifyInstance) => {
 
             if (
                 !credential ||
-                !(await verify(credential.password, body.password))
+                !(await verify(credential.password, body.password, body.username))
             )
                 return res
                     .status(400)
@@ -54,12 +54,15 @@ export default async (app: FastifyInstance) => {
 
         let user = await createUser({
             ...body,
-            password: await hash(body.password)
+            password: await hash(body.password, body.username)
         })
 
         if (!user) return res.status(502).send(error('Something went wrong'))
 
-        return success(user)
+        return success({
+            id: user.id,
+            username: user.username
+        })
     })
 
     app.patch<{ Body: ResetPasswordBody }>(
@@ -79,6 +82,7 @@ export default async (app: FastifyInstance) => {
                 return res.status(403).send(error('Invalid user'))
 
             return success({
+                id: newCredential.id,
                 username: newCredential.username
             })
         }
@@ -102,6 +106,7 @@ export default async (app: FastifyInstance) => {
                 return res.status(403).send(error('Incorrect password'))
 
             return success({
+                id: newCredential.id,
                 username: newCredential.username
             })
         }

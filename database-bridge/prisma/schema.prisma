@@ -8,15 +8,15 @@ generator client {
 }
 
 model User {
-  id            Int     @id @default(autoincrement())
-  username      String  @db.VarChar(25) @unique()
-  password      String  @db.VarChar(32)
-  email         String
+  id            Int       @id @default(autoincrement())
+  username      String    @db.VarChar(25) @unique()
+  password      String    @db.VarChar(32)
+  email         String    @unique
   profile       Profile?
-  post          Post[]  @relation("ownPost")
-  following     User[]  @relation("follow", references: [id])
-  followedBy    User[]  @relation("follow", references: [id])
-  favorite      Post[]  @relation("favorite", references: [id])
+  post          Post[]    @relation("ownPost")
+  following     User[]    @relation("follow", references: [id])
+  followedBy    User[]    @relation("follow", references: [id])
+  favorite      Post[]    @relation("favorite", references: [id])
 }
 
 model Profile {

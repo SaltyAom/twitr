@@ -73,7 +73,15 @@ export const getUserPosts = async ({ id, pagination }: GetUserPostParam) =>
                     id: true,
                     content: true,
                     images: true,
-                    createdAt: true
+                    createdAt: true,
+                    retweetFromPost: {
+                        select: {
+                            id: true,
+                            content: true,
+                            images: true,
+                            createdAt: true
+                        }
+                    }
                 },
                 skip: getPagination(+pagination - 1, postPerPage),
                 take: getPagination(pagination, postPerPage)
@@ -97,16 +105,39 @@ export const follow = async ({ from, to }: FollowBody) => {
 
     if (!current) return null
 
-    return await Prisma.user.update({
-        where: {
-            id: from
-        },
-        data: {
-            following: {
-                set: [...current.following, { id: to }]
+    if (current.following.some((user) => user.id === to)) {
+        await Prisma.user.update({
+            where: {
+                id: from
+            },
+            data: {
+                following: {
+                    set: current.following.filter((user) => user.id !== to)
+                }
             }
+        })
+
+        return {
+            id: to,
+            type: 'unfollowed'
         }
-    })
+    } else {
+        await Prisma.user.update({
+            where: {
+                id: from
+            },
+            data: {
+                following: {
+                    set: [...current.following, { id: to }]
+                }
+            }
+        })
+
+        return {
+            id: to,
+            type: 'followed'
+        }
+    }
 }
 
 const followerPerPage = 25
@@ -119,11 +150,12 @@ export const getFollowing = async ({ id, pagination }: FollowingParam) =>
         select: {
             following: {
                 select: {
-                    id: true,
                     profile: {
                         select: {
+                            id: true,
                             name: true,
-                            image: true
+                            image: true,
+                            bio: true
                         }
                     }
                 },
@@ -141,10 +173,11 @@ export const getFollowedBy = async ({ id, pagination }: FollowedByParam) =>
         select: {
             followedBy: {
                 select: {
-                    id: true,
                     profile: {
                         select: {
+                            id: true,
                             name: true,
+                            bio: true,
                             image: true
                         }
                     }

@@ -1,10 +1,15 @@
-use actix_web::{HttpResponse, HttpRequest, cookie::{Cookie, SameSite}, web::{ ServiceConfig, scope, get, post, Json }};
+use actix_web::{
+    HttpResponse, HttpRequest, 
+    cookie::{Cookie, SameSite}, 
+    web::{ ServiceConfig, scope, get, post, put, Json }
+};
 
 use crate::services::response::{ bridge_error, something_went_wrong };
 
-use super::services::{add_session, delete_sessions, validate};
-
-use super::models::SignInRequest;
+use super::{
+    models::{SignInRequest, SignUpRequest}, 
+    services::{add_session, delete_sessions, validate, signup}
+};
 
 async fn signin(user: Json<SignInRequest>, request: HttpRequest) -> HttpResponse {
     let request_token = request.cookie("token");
@@ -29,21 +34,34 @@ async fn signin(user: Json<SignInRequest>, request: HttpRequest) -> HttpResponse
 
     let new_session = add_session(user.data.unwrap().id).await;
 
-    if new_session.is_err() {
-        return something_went_wrong()
+    if let Ok(token) = new_session {
+        HttpResponse::Ok()
+            .cookie(
+                Cookie::build("token", token.to_owned())
+                    .path("/")
+                    .http_only(true)
+                    .same_site(SameSite::Strict)
+                    .finish()
+            )
+            .body("Signed in")
+    } else {
+        something_went_wrong()
     }
+}
 
-    let token = new_session.unwrap();
+async fn request_signup(credentials: Json<SignUpRequest>) -> HttpResponse {
+    let sign_request = signup(&credentials).await;
 
-    HttpResponse::Ok()
-        .cookie(
-            Cookie::build("token", token.to_owned())
-                .path("/")
-                .http_only(true)
-                .same_site(SameSite::Strict)
-                .finish()
-        )
-        .body("Signed in")
+    if let Ok(user) = sign_request {
+        if !user.success {
+            return bridge_error(user.info)
+        }
+
+        HttpResponse::Ok()
+            .json(user.data)
+    } else {
+        something_went_wrong()
+    }
 }
 
 async fn signout(request: HttpRequest) -> HttpResponse {
@@ -72,6 +90,7 @@ pub fn credentials(config: &mut ServiceConfig) {
     config.service(
         scope("/user")
                     .route("/signin", post().to(signin))
+                    .route("/signup", put().to(request_signup))
                     .route("/signout", get().to(signout))
     );
 }

@@ -9,8 +9,6 @@ import type { FavBody, PostBody, RetweetBody, GetPostParam } from './types'
 
 export default (app: FastifyInstance) => {
     app.put<{ Body: PostBody }>('/create', async ({ body }, res) => {
-        console.log(body)
-
         if (
             !validate(body, {
                 id: 'number',

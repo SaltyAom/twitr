@@ -1,4 +1,7 @@
-use actix_web::{HttpRequest, HttpResponse, web::{Json, ServiceConfig, patch, put, scope}};
+use actix_web::{
+    HttpRequest, HttpResponse, 
+    web::{Json, ServiceConfig, get, patch, put, scope, Path}
+};
 
 use crate::services::{
     authority::get_user_id, 
@@ -7,7 +10,7 @@ use crate::services::{
 
 use super::{
     models::{FavoriteData, FavoriteRequest, PostData, PostRequest, RetweetData, RetweetRequest}, 
-    services::{create_post, retweet, favorite}
+    services::{create_post, retweet, favorite, find_post}
 };
 
 pub async fn create(post: Json<PostData>, request: HttpRequest) -> HttpResponse {
@@ -29,18 +32,16 @@ pub async fn create(post: Json<PostData>, request: HttpRequest) -> HttpResponse 
         }
     ).await;
 
-    if post_request.is_err() {
-        return something_went_wrong()
+    if let Ok(post) = post_request {
+        if !post.success {
+            return bridge_error(post.info)
+        }
+    
+        HttpResponse::Ok()
+            .json(post.data)
+    } else {
+        something_went_wrong()
     }
-
-    let post = post_request.unwrap();
-
-    if !post.success {
-        return bridge_error(post.info)
-    }
-
-    HttpResponse::Ok()
-        .json(post.data)
 }
 
 pub async fn retweet_post(post: Json<RetweetData>, request: HttpRequest) -> HttpResponse {
@@ -63,18 +64,16 @@ pub async fn retweet_post(post: Json<RetweetData>, request: HttpRequest) -> Http
         }
     ).await;
 
-    if retweet_request.is_err() {
-        return something_went_wrong()
+    if let Ok(retweet) = retweet_request {
+        if !retweet.success {
+            return bridge_error(retweet.info)
+        }
+    
+        HttpResponse::Ok()
+            .json(retweet.data)
+    } else {
+        something_went_wrong()
     }
-
-    let retweet = retweet_request.unwrap();
-
-    if !retweet.success {
-        return bridge_error(retweet.info)
-    }
-
-    HttpResponse::Ok()
-        .json(retweet.data)
 }
 
 pub async fn favorite_post(favorite_data: Json<FavoriteData>, request: HttpRequest) -> HttpResponse {
@@ -95,24 +94,40 @@ pub async fn favorite_post(favorite_data: Json<FavoriteData>, request: HttpReque
         }
     ).await;
 
-    if favorite_request.is_err() {
-        return something_went_wrong()
+    if let Ok(retweet) = favorite_request {
+        if !retweet.success {
+            return bridge_error(retweet.info)
+        }
+
+        HttpResponse::Ok()
+            .json(retweet.data)
+    } else {
+        something_went_wrong()
     }
+}
 
-    let retweet = favorite_request.unwrap();
+pub async fn get_post(path: Path<u64>) -> HttpResponse {
+    let id = path.into_inner();
 
-    if !retweet.success {
-        return bridge_error(retweet.info)
+    let get_post_request = find_post(id).await;
+
+    if let Ok(post) = get_post_request {
+        if !post.success {
+            return bridge_error(post.info)
+        }
+
+        HttpResponse::Ok()
+            .json(post.data)
+    } else {
+        something_went_wrong()
     }
-
-    HttpResponse::Ok()
-        .json(retweet)
 }
 
 pub fn post(config: &mut ServiceConfig) {
     config
         .service(
             scope("/post")
+                .route("/{id}", get().to(get_post))
                 .route("/create", put().to(create))
                 .route("/retweet", put().to(retweet_post))
                 .route("/favorite", patch().to(favorite_post))

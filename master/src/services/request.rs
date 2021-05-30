@@ -17,7 +17,7 @@ pub struct DatabaseBridge {}
 
 impl DatabaseBridge {
     pub async fn get<T: DeserializeOwned>(path: &str) -> DatabaseBridgeRequest<T> {
-        let response = REQUEST
+        let response: DatabaseBridgeResponse<T> = REQUEST
             .get(get_bridge(path))
             .send()
             .await?

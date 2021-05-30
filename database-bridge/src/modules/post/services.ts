@@ -68,6 +68,7 @@ export const getPost = async ({ id: idString }: GetPostParam) => {
                 id
             },
             select: {
+                id: true,
                 content: true,
                 createdAt: true,
                 images: true,
@@ -81,7 +82,6 @@ export const getPost = async ({ id: idString }: GetPostParam) => {
                         }
                     }
                 },
-                retweetId: true,
                 retweetFromPost: {
                     select: {
                         id: true,

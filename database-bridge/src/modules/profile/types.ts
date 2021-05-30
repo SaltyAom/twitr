@@ -21,3 +21,8 @@ export interface FollowedByParam {
     id: string
     pagination: string
 }
+
+export interface FeedParam {
+    id: string
+    pagination: string
+}

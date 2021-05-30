@@ -1,6 +1,6 @@
 use crate::services::request::{ DatabaseBridge, DatabaseBridgeRequest };
 
-use super::models::{FavoriteRequest, PostBridge, PostRequest, RetweetRequest};
+use super::models::{FavoriteRequest, PostBridge, PostRequest, RetweetRequest, DetailedPostBridge};
 
 pub async fn create_post(post: &PostRequest) -> DatabaseBridgeRequest<PostBridge> {
     Ok(
@@ -27,6 +27,15 @@ pub async fn favorite(post: &FavoriteRequest) -> DatabaseBridgeRequest<PostBridg
         DatabaseBridge::patch::<PostBridge, FavoriteRequest>(
             "post/favorite", 
             post
+        )
+        .await?
+    )
+}
+
+pub async fn find_post(id: u64) -> DatabaseBridgeRequest<DetailedPostBridge> {
+    Ok(
+        DatabaseBridge::get::<DetailedPostBridge>(
+            &format!("post/{}", id)
         )
         .await?
     )

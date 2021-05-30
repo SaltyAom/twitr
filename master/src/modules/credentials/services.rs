@@ -6,7 +6,7 @@ use rand::distributions::Distribution;
 use crate::services::constants::REDIS;
 use crate::services::request::{ DatabaseBridge, DatabaseBridgeRequest };
 
-use super::models::{SignInBridge, SignInRequest};
+use super::models::{SignInBridge, SignInRequest, SignUpBridge, SignUpRequest};
 
 struct Tokens;
 
@@ -55,6 +55,15 @@ pub async fn validate(credentials: &SignInRequest) -> DatabaseBridgeRequest<Sign
     Ok(
         DatabaseBridge::post::<SignInBridge, SignInRequest>(
             "credential/validate", 
+            credentials
+        ).await?
+    )
+}
+
+pub async fn signup(credentials: &SignUpRequest) -> DatabaseBridgeRequest<SignUpBridge> {
+    Ok(
+        DatabaseBridge::put::<SignUpBridge, SignUpRequest>(
+            "credential/create", 
             credentials
         ).await?
     )

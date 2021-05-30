@@ -16,7 +16,8 @@ import {
     FollowBody,
     FollowingParam,
     FollowedByParam,
-    GetUserPostParam
+    GetUserPostParam,
+    FeedParam
 } from './types'
 
 export default async (app: FastifyInstance) => {
@@ -88,6 +89,20 @@ export default async (app: FastifyInstance) => {
                 return res.status(502).send(error('Something went wrong'))
 
             return success(followedBy)
+        }
+    )
+
+    app.get<{ Params: FeedParam }>(
+        '/:id/feed/:pagination',
+        async ({ params, params: { pagination } }, res) => {
+            if (+pagination < 1) return res.status(400).send(invalidForm())
+
+            let feed = await getUserPosts(params)
+
+            if (!feed)
+                return res.status(502).send(error('Something went wrong'))
+
+            return success(feed)
         }
     )
 

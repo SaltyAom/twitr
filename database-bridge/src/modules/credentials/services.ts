@@ -5,7 +5,7 @@ import type {
     CredentialBody,
     CreateUserBody,
     ChangePasswordBody,
-    ResetPasswordBody,
+    ResetPasswordBody
 } from './types'
 
 export const getCredential = async ({ username }: CredentialBody) =>
@@ -32,15 +32,27 @@ export const createUser = async ({ name, ...userData }: CreateUserBody) =>
         }
     })
 
-export const resetPassword = async ({ id, password }: ResetPasswordBody) =>
-    await Prisma.user.update({
+export const resetPassword = async ({ id, password }: ResetPasswordBody) => {
+    let user = await Prisma.user.findUnique({
+        where: {
+            id
+        },
+        select: {
+            username: true
+        }
+    })
+
+    if (!user) return null
+
+    return await Prisma.user.update({
         where: {
             id
         },
         data: {
-            password: await hash(password)
+            password: await hash(password, user.username)
         }
     })
+}
 
 export const changePassword = async ({
     id,
@@ -52,11 +64,20 @@ export const changePassword = async ({
             id
         },
         select: {
+            username: true,
             password: true
         }
     })
 
-    if (!current || !verify(current.password, oldPassword)) return
+    if (!current || !verify(current.password, oldPassword, current.username))
+        return
 
-    return await resetPassword({ id, password: newPassword })
+    return await Prisma.user.update({
+        where: {
+            id
+        },
+        data: {
+            password: await hash(newPassword, current.username)
+        }
+    })
 }

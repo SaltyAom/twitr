@@ -34,13 +34,8 @@ pub async fn get_user_id(request: &HttpRequest) -> Result<u64, RedisError> {
         return Ok(0)
     }
 
-    println!("K");
-
     let mut connection = REDIS.get_async_connection().await?;
-
     let id = connection.get::<&str, u64>(token.unwrap().value()).await?;
-
-    println!("id: {}", id);
 
     Ok(id)
 }
