@@ -74,17 +74,42 @@ export const getUserPosts = async ({ id, pagination }: GetUserPostParam) =>
                     content: true,
                     images: true,
                     createdAt: true,
+                    author: {
+                        select: {
+                            profile: {
+                                select: {
+                                    id: true,
+                                    name: true,
+                                    image: true
+                                }
+                            }
+                        }
+                    },
                     retweetFromPost: {
                         select: {
                             id: true,
                             content: true,
                             images: true,
-                            createdAt: true
+                            createdAt: true,
+                            author: {
+                                select: {
+                                    profile: {
+                                        select: {
+                                            id: true,
+                                            name: true,
+                                            image: true
+                                        }
+                                    }
+                                }
+                            }
                         }
                     }
                 },
                 skip: getPagination(+pagination - 1, postPerPage),
-                take: getPagination(pagination, postPerPage)
+                take: getPagination(pagination, postPerPage),
+                orderBy: {
+                    createdAt: 'desc'
+                }
             }
         }
     })

@@ -4,7 +4,7 @@ use crate::services::constants::REDIS;
 
 use redis::{AsyncCommands, RedisError};
 
-pub async fn is_valid_author(requested_id: u64, token: &str) -> Result<bool, RedisError> {
+pub async fn _is_valid_author(requested_id: u64, token: &str) -> Result<bool, RedisError> {
     let mut connection = REDIS.get_async_connection().await?;
 
     let id = connection.get::<&str, u64>(token).await?;
@@ -12,14 +12,14 @@ pub async fn is_valid_author(requested_id: u64, token: &str) -> Result<bool, Red
     Ok(requested_id == id)
 }
 
-pub async fn valid_authority(id: u64, request: &HttpRequest) -> Result<bool, RedisError> {
+pub async fn _valid_authority(id: u64, request: &HttpRequest) -> Result<bool, RedisError> {
     let token = request.cookie("token");
 
     if token.is_none() {
         return Ok(false)
     }
 
-    let valid = is_valid_author(
+    let valid = _is_valid_author(
         id, 
         token.unwrap().value()
     ).await?;

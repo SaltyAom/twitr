@@ -47,8 +47,23 @@ pub struct PostDataBridge {
     content: String,
     images: Vec<String>,
     createdAt: String,
+    author: PostAuthorBridge,
     retweetFromPost: Option<PostDataReferenceBridge>
 }
+
+#[derive(Serialize, Deserialize)]
+pub struct PostAuthorBridge {
+    profile: PostProfileBridge
+}
+
+#[allow(non_snake_case)]
+#[derive(Serialize, Deserialize)]
+pub struct PostProfileBridge {
+    id: u64,
+    name: String,
+    image: Option<String>
+}
+
 
 #[allow(non_snake_case)]
 #[derive(Serialize, Deserialize)]
@@ -56,7 +71,8 @@ pub struct PostDataReferenceBridge {
     id: u64,
     content: String,
     images: Vec<String>,
-    createdAt: String
+    createdAt: String,
+    author: PostAuthorBridge,
 }
 
 #[allow(non_snake_case)]
